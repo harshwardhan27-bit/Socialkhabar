@@ -37,6 +37,7 @@
     .card img {
       width: 100%;
       height: auto;
+      display: block;
     }
     .content {
       padding: 15px;
@@ -60,6 +61,10 @@
       margin-top: 5px;
       border-radius: 6px;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+    .reactions button:hover {
+      background-color: #555;
     }
     .updated {
       text-align: center;
@@ -94,22 +99,26 @@
           const card = document.createElement("div");
           card.className = "card";
 
+          let imageHTML = "";
+          if (imgUrl && imgUrl.startsWith("http")) {
+            imageHTML = `<img src="${imgUrl}" alt="news image" onerror="this.style.display='none';" />`;
+          }
+
           card.innerHTML = `
-            ${imgUrl ? `<img src="${imgUrl}" alt="news image">` : ""}
+            ${imageHTML}
             <div class="content">
               <div class="headline">${headline}</div>
               <div class="source">Source: ${source}</div>
               <div class="reactions">
-                <button>🔥</button>
-                <button>🤯</button>
-                <button>❌</button>
+                <button onclick="alert('🔥 Reaction submitted')">🔥</button>
+                <button onclick="alert('🤯 Reaction submitted')">🤯</button>
+                <button onclick="alert('❌ Reaction submitted')">❌</button>
               </div>
             </div>
           `;
           feed.appendChild(card);
         });
 
-        // Set last updated
         document.getElementById("updated").innerText =
           "Last Updated: " + new Date().toLocaleTimeString();
       })
