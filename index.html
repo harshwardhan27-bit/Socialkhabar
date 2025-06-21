@@ -7,9 +7,9 @@
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       background-color: #121212;
-      color: white;
+      color: #fff;
     }
     header {
       background-color: #000;
@@ -20,51 +20,59 @@
       border-bottom: 1px solid #333;
     }
     .feed {
-      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding-bottom: 60px;
     }
     .card {
-      background-color: #1e1e1e;
-      width: 100%;
+      width: 90%;
       max-width: 500px;
-      margin-bottom: 20px;
+      background-color: #1f1f1f;
+      margin: 15px 0;
       border-radius: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
       overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     }
     .card img {
       width: 100%;
       height: auto;
-      display: block;
     }
     .content {
       padding: 15px;
     }
     .headline {
       font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 10px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
     .source {
       font-size: 14px;
       color: #aaa;
+      margin-bottom: 10px;
+    }
+    .reactions button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      margin-right: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      cursor: pointer;
     }
     .updated {
-      font-size: 12px;
-      margin-top: 30px;
       text-align: center;
-      color: #888;
+      font-size: 12px;
+      color: #999;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <header>Social Khabar 📰</header>
-  <div class="feed" id="newsFeed">
-    <p>Loading news...</p>
-  </div>
-  <div class="updated" id="updatedTime"></div>
+  <div class="feed" id="feed"></div>
+  <div class="updated" id="updated">Last Updated: ...</div>
 
   <script>
     const sheetID = "1Kqx4Z8GujblnH-y8-PfGnQpAwCGaInjEo1Bebcrh_QA";
@@ -74,47 +82,41 @@
     fetch(url)
       .then(res => res.text())
       .then(data => {
-        const json = JSON.parse(data.substring(47).slice(0, -2));
+        const json = JSON.parse(data.substr(47).slice(0, -2));
         const rows = json.table.rows;
-        const feed = document.getElementById("newsFeed");
-        feed.innerHTML = "";
+        const feed = document.getElementById("feed");
 
-        rows.slice(-5).reverse().forEach(row => {
+        rows.forEach(row => {
           const headline = row.c[0]?.v || "No headline";
-          const image = row.c[1]?.v || "";
-          const source = row.c[2]?.v || "Source unknown";
+          const imgUrl = row.c[1]?.v || "";
+          const source = row.c[2]?.v || "Unknown";
 
           const card = document.createElement("div");
           card.className = "card";
 
-          if (image) {
-            const img = document.createElement("img");
-            img.src = image;
-            card.appendChild(img);
-          }
-
-          const content = document.createElement("div");
-          content.className = "content";
-
-          const hText = document.createElement("div");
-          hText.className = "headline";
-          hText.textContent = headline;
-
-          const sText = document.createElement("div");
-          sText.className = "source";
-          sText.textContent = `Source: ${source}`;
-
-          content.appendChild(hText);
-          content.appendChild(sText);
-          card.appendChild(content);
+          card.innerHTML = `
+            ${imgUrl ? `<img src="${imgUrl}" alt="news image">` : ""}
+            <div class="content">
+              <div class="headline">${headline}</div>
+              <div class="source">Source: ${source}</div>
+              <div class="reactions">
+                <button>🔥</button>
+                <button>🤯</button>
+                <button>❌</button>
+              </div>
+            </div>
+          `;
           feed.appendChild(card);
         });
 
-        const updated = document.getElementById("updatedTime");
-        updated.textContent = "🕓 Last Updated: " + new Date().toLocaleString();
+        // Set last updated
+        document.getElementById("updated").innerText =
+          "Last Updated: " + new Date().toLocaleTimeString();
       })
       .catch(err => {
-        document.getElementById("newsFeed").innerHTML = "<p>Failed to load news.</p>";
+        document.getElementById("feed").innerHTML =
+          "<p style='padding:20px'>News could not load 😢</p>";
+        console.error(err);
       });
   </script>
 </body>
