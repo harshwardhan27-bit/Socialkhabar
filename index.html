@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Social Khabar 📰</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: white;
+    }
+    header {
+      background-color: #000;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
+    .feed {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card {
+      background-color: #1e1e1e;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .content {
+      padding: 15px;
+    }
+    .headline {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .source {
+      font-size: 14px;
+      color: #aaa;
+    }
+    .updated {
+      font-size: 12px;
+      margin-top: 30px;
+      text-align: center;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <header>Social Khabar 📰</header>
+  <div class="feed" id="newsFeed">
+    <p>Loading news...</p>
+  </div>
+  <div class="updated" id="updatedTime"></div>
+
+  <script>
+    const sheetID = "1Kqx4Z8GujblnH-y8-PfGnQpAwCGaInjEo1Bebcrh_QA";
+    const sheetName = "Sheet1";
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+        const feed = document.getElementById("newsFeed");
+        feed.innerHTML = "";
+
+        rows.slice(-5).reverse().forEach(row => {
+          const headline = row.c[0]?.v || "No headline";
+          const image = row.c[1]?.v || "";
+          const source = row.c[2]?.v || "Source unknown";
+
+          const card = document.createElement("div");
+          card.className = "card";
+
+          if (image) {
+            const img = document.createElement("img");
+            img.src = image;
+            card.appendChild(img);
+          }
+
+          const content = document.createElement("div");
+          content.className = "content";
+
+          const hText = document.createElement("div");
+          hText.className = "headline";
+          hText.textContent = headline;
+
+          const sText = document.createElement("div");
+          sText.className = "source";
+          sText.textContent = `Source: ${source}`;
+
+          content.appendChild(hText);
+          content.appendChild(sText);
+          card.appendChild(content);
+          feed.appendChild(card);
+        });
+
+        const updated = document.getElementById("updatedTime");
+        updated.textContent = "🕓 Last Updated: " + new Date().toLocaleString();
+      })
+      .catch(err => {
+        document.getElementById("newsFeed").innerHTML = "<p>Failed to load news.</p>";
+      });
+  </script>
+</body>
+</html>
