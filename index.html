@@ -2,128 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Social Khabar 📰</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Social Khabar</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
-      color: #fff;
+      color: white;
     }
     header {
-      background-color: #000;
-      padding: 15px;
+      background: #000;
+      padding: 16px;
       text-align: center;
       font-size: 24px;
       font-weight: bold;
-      border-bottom: 1px solid #333;
-    }
-    .feed {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-bottom: 60px;
     }
     .card {
-      width: 90%;
-      max-width: 500px;
-      background-color: #1f1f1f;
-      margin: 15px 0;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+      border-radius: 16px;
+      padding: 16px;
+      margin: 20px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease;
     }
-    <img src="https://i.imgur.com/fk9Fw3n.jpg" alt="news image" onerror="this.style.display='none';" />
-    }
-    .content {
-      padding: 15px;
+    .card:hover {
+      transform: scale(1.02);
     }
     .headline {
       font-size: 18px;
       font-weight: bold;
-      margin-bottom: 8px;
     }
     .source {
-      font-size: 14px;
       color: #aaa;
-      margin-bottom: 10px;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .reactions {
+      margin-top: 10px;
     }
     .reactions button {
-      background-color: #333;
+      background: #292929;
       color: white;
-      border: none;
+      border: 1px solid #444;
       padding: 8px 12px;
       margin-right: 8px;
-      margin-top: 5px;
-      border-radius: 6px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ff0051aa;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-    .reactions button:hover {
-      background-color: #555;
     }
     .updated {
       text-align: center;
-      font-size: 12px;
-      color: #999;
-      margin-top: 10px;
+      font-size: 14px;
+      padding: 12px;
+      color: #777;
+    }
+    .profile-scroll {
+      padding: 16px;
+    }
+    .profile-scroll h3 {
+      margin-bottom: 10px;
+    }
+    .profile-items {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+    }
+    .profile-item {
+      min-width: 140px;
+      background: #1e1e1e;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
   </style>
 </head>
 <body>
-  <header>Social Khabar 📰</header>
-  <div class="feed" id="feed"></div>
-  <div class="updated" id="updated">Last Updated: ...</div>
+  <header>📱 Social Khabar</header>
+
+  <div id="feed"></div>
+  <div class="updated" id="lastUpdated">Loading...</div>
+
+  <div class="profile-scroll">
+    <h3>👤 Make Your Profile</h3>
+    <div class="profile-items">
+      <div class="profile-item">
+        <div style="font-size: 30px;">🖼️</div>
+        <div>Upload Photo</div>
+      </div>
+      <div class="profile-item">
+        <div style="font-size: 30px;">📚</div>
+        <div>Choose Interests</div>
+      </div>
+      <div class="profile-item">
+        <div style="font-size: 30px;">📝</div>
+        <div>Add Bio</div>
+      </div>
+      <div class="profile-item">
+        <div style="font-size: 30px;">🏷️</div>
+        <div>Follow Tags</div>
+      </div>
+      <div class="profile-item">
+        <div style="font-size: 30px;">✏️</div>
+        <div>Set Username</div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const sheetID = "1Kqx4Z8GujblnH-y8-PfGnQpAwCGaInjEo1Bebcrh_QA";
+    const sheetId = "1Kqx4Z8GujblnH-y8-PfGnQpAwCGaInjEo1Bebcrh_QA";
     const sheetName = "Sheet1";
-    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+    const url = `https://opensheet.elk.sh/${sheetId}/${sheetName}`;
 
-    fetch(url)
-      .then(res => res.text())
-      .then(data => {
-        const json = JSON.parse(data.substr(47).slice(0, -2));
-        const rows = json.table.rows;
+    async function loadNews() {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
         const feed = document.getElementById("feed");
+        feed.innerHTML = "";
 
-        rows.forEach(row => {
-          const headline = row.c[0]?.v || "No headline";
-          const imgUrl = row.c[1]?.v || "";
-          const source = row.c[2]?.v || "Unknown";
-
+        data.forEach(item => {
           const card = document.createElement("div");
           card.className = "card";
 
-          let imageHTML = "";
-          if (imgUrl && imgUrl.startsWith("http")) {
-            imageHTML = `<img src="${imgUrl}" alt="news image" onerror="this.style.display='none';" />`;
-          }
-
           card.innerHTML = `
-            ${imageHTML}
-            <div class="content">
-              <div class="headline">${headline}</div>
-              <div class="source">Source: ${source}</div>
-              <div class="reactions">
-                <button onclick="alert('🔥 Reaction submitted')">🔥</button>
-                <button onclick="alert('🤯 Reaction submitted')">🤯</button>
-                <button onclick="alert('❌ Reaction submitted')">❌</button>
-              </div>
+            <div class="headline">📰 ${item.Headline}</div>
+            <div class="source">🔗 ${item.Source}</div>
+            <div class="reactions">
+              <button>🔥</button>
+              <button>🤯</button>
+              <button>❌</button>
             </div>
           `;
           feed.appendChild(card);
         });
 
-        document.getElementById("updated").innerText =
-          "Last Updated: " + new Date().toLocaleTimeString();
-      })
-      .catch(err => {
-        document.getElementById("feed").innerHTML =
-          "<p style='padding:20px'>News could not load 😢</p>";
-        console.error(err);
-      });
+        const now = new Date();
+        document.getElementById("lastUpdated").innerText = "✅ News updated at " + now.toLocaleTimeString();
+      } catch (e) {
+        document.getElementById("lastUpdated").innerText = "⚠️ Failed to load news";
+      }
+    }
+
+    loadNews();
   </script>
 </body>
 </html>
